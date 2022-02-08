@@ -1,0 +1,13 @@
+index=ndx sourcetype=srctp message=*
+| rex field=message "Passed (?<passed_attempt>\w+)"
+| rex field=message "Failed (?<failed_attempt>\w+)"
+| rex field=message "case num (?<case_num>\S+)"
+| rex field=message "(?<saved>Not saved)"
+| rex field=message "(?<saved>Saved)"
+| rex field=message "UserId - (?<userid>\w+)"
+| rex field=message "XV - (?<xv>\w+)"
+| rex field=message "UserAd - (?<userad>\w+)"
+| rex field=message "Elect - (?<elect>\w+)"
+| rex field=message "Later Code - (?<later_code>\w+)"
+| fields passed_attempt failed_attempt _time case_num xv userid elect later_code saved userad
+| stats max(_time) as _time values(*) as * by userid case_num
