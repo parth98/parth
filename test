@@ -1,13 +1,20 @@
-index=ndx sourcetype=srctp message=*
-| rex field=message "Passed (?<passed_attempt>\w+)"
-| rex field=message "Failed (?<failed_attempt>\w+)"
-| rex field=message "case num (?<case_num>\S+)"
-| rex field=message "(?<saved>Not saved)"
-| rex field=message "(?<saved>Saved)"
-| rex field=message "UserId - (?<userid>\w+)"
-| rex field=message "XV - (?<xv>\w+)"
-| rex field=message "UserAd - (?<userad>\w+)"
-| rex field=message "Elect - (?<elect>\w+)"
-| rex field=message "Later Code - (?<later_code>\w+)"
-| fields passed_attempt failed_attempt _time case_num xv userid elect later_code saved userad
-| stats max(_time) as _time values(*) as * by userid case_num
+| makeresults 
+| eval data="\"message\":\" *** User Login successfully credentials userid 2NANO-323254-7654-4  UserPin - 287654 AreaCode - 98765 AreaNum - 98765 Sector - 87612345 Short Sem - ZEB\"
+    \"message\": \"User Failed to login userid - 2NANO-323254-7654-4\"
+    \"message\": \"User is from stackoverflow group, on XZ ABCE for userid - 2NAN0-323254-7654-4\"
+    \"message\":\" *** User Login successfully credentials userid 2ABDO-54312-7654-4  UserPin - 287654 AreaCode - 98765 AreaNum - 98765 Sector - 87612345 Short Sem - ZEB\"
+    \"message\":\" *** User Login successfully credentials userid 2COMA-765234-8653-4  UserPin - 287654 AreaCode - 98765 AreaNum - 98765 Sector - 87612345 Short Sem - ZEB\"" 
+| eval data=split(data,"
+") 
+| mvexpand data 
+| eval _raw=data 
+```Everything above is for demo purposes only```
+```Extract fields```
+| rex "userid\s(?:-\s)?(?<userid>\S+)" 
+| rex "UserPin - (?<UserPin>\S+) AreaCode - (?<AreaCode>\S+) AreaNum - (?<AreaNum>\S+) Sector - (?<Sector>\S+) Short Sem - (?<Short_Sem>\S+)"
+```Clean up the fields```
+| eval userid=trim(userid,"\""), Short_Sem=trim(Short_Sem, "\"")
+```Group results```
+| stats values(*) as * by userid
+| rename userid as UserId
+| table UserId UserPin AreaCode AreaNum Sector Short_Sem
