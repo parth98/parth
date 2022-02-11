@@ -10,11 +10,14 @@
 | eval _raw=data 
 ```Everything above is for demo purposes only```
 ```Extract fields```
+| rex "message\":\s*\"\s*(?:\*+\s)?(?<msg>.*?)(?:userid|,)"
 | rex "userid\s(?:-\s)?(?<userid>\S+)" 
 | rex "UserPin - (?<UserPin>\S+) AreaCode - (?<AreaCode>\S+) AreaNum - (?<AreaNum>\S+) Sector - (?<Sector>\S+) Short Sem - (?<Short_Sem>\S+)"
 ```Clean up the fields```
 | eval userid=trim(userid,"\""), Short_Sem=trim(Short_Sem, "\"")
 ```Group results```
 | stats values(*) as * by userid
+```Filter events```
+| search (msg="*User Failed to login*") OR (msg="*User is from stackoverflow group*")
 | rename userid as UserId
 | table UserId UserPin AreaCode AreaNum Sector Short_Sem
